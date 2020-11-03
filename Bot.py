@@ -1,0 +1,185 @@
+from Shedule import Shedule
+from time import strftime
+from myWebFuncs import getUpdates, sendMessage
+
+from time import sleep
+
+config_file = "config.cfg"
+
+ANSWER_INTERVAL = 15 #seconds
+POST_CHECK_INTERVAL = 333 #seconds
+
+class Bot:
+	def __init__(self, token, owner_id, channel_id, last_update_id):
+		self.token = token
+		self.owner_id = owner_id
+		self.channel_id = channel_id
+		#keep track of the lst update to request only new updates
+		self.last_update_id = last_update_id
+		#Shedule loads shedule from file defined in Shedule.py
+		self.shedule = Shedule()
+
+		#to manage stage of photoAddFunc is going
+		self.photo_add_stage = 0
+		self.photo_add_data = {}
+
+		#to manage stage of delSheduledPostFunc
+		self.del_stage = 0
+		self.del_id = -1
+
+		#time managment
+		self.time_passed_since_post_check = POST_CHECK_INTERVAL
+
+		#typing init messages
+		#to the console
+		print("[" + strftime("%Y-%m-%d %H:%M:%S") + "] Bot is active. You can now chat it")
+		#and to the chat
+		self.sendMessageToOwner("Im set up!")
+		self.sendMessageToOwner(self.formHelpMenu())
+
+	def mainLoop(self):
+		self.updatesHandler()
+
+		if self.time_passed_since_post_check >= POST_CHECK_INTERVAL:
+			self.postingHandler()
+			self.time_passed_since_post_check -= POST_CHECK_INTERVAL
+
+		self.time_passed_since_post_check += ANSWER_INTERVAL
+		sleep(ANSWER_INTERVAL)
+
+	def postingHandler(self):
+		result = self.shedule.checkPosts(self.token, self.channel_id)
+
+		if result != "":
+		    self.sendMessageToOwner(result)
+		    print(result)
+		else:
+		    print("[" + strftime("%Y-%m-%d %H:%M:%S") + "] Nothing posted\n")
+
+	def updatesHandler(self):
+		#getting updates
+		# + 1 means that we are requesting updates only after the last one
+		updates = getUpdates(self.token, self.last_update_id + 1)
+
+		#checking if there an error
+		if not updates['ok']:
+			self.sendMessageToOwner("[" + strftime("%Y-%m-%d %H:%M:%S") + "] Error while trying to get updates here is telegram`s answer.\n" + updates)
+		else:
+			#leaving only needed part
+			updates = updates["result"]
+			#running through all updates
+			for upd in updates:
+				#answer them only if update has a text
+				if "message" in upd:
+					if "text" in upd["message"]:
+						#sending text to the next step. Recognising the command
+						self.replyHandler(upd["message"]["text"])
+					else:
+						#if there is no text
+						self.sendMessageToOwner("Its not a command...")
+				else:
+					#if there is no text
+					self.sendMessageToOwner("Its not a command...")
+
+			#getting last update`s id bc we dont want to run it twice
+			if len(updates) > 0:
+				self.last_update_id = updates[-1]["update_id"]
+				#rewriting last update id in the file
+				lines = []
+				with open(config_file, "r") as f:
+					lines = f.readlines()
+
+				lines[3] = str(updates[-1]["update_id"])
+
+				with open(config_file, "w") as f:
+					f.writelines(lines)
+
+	def replyHandler(self, command):
+		print("[" + strftime("%Y-%m-%d %H:%M:%S") + "] OwnerMessage\n", command)
+
+		if command.lower() == "help":
+			self.sendMessageToOwner(self.formHelpMenu())
+
+		elif command.lower() == "add" or self.photo_add_stage > 0:
+			self.photoAddFunc(command)
+
+		elif command.lower() == "show":
+			self.sendMessageToOwner(self.shedule.showList())
+
+		elif command.lower() == "del" or self.del_stage > 0:
+			self.delSheduledPostFunc(command)
+
+		else:
+			self.sendMessageToOwner("I cant understand you...")
+
+
+	def formHelpMenu(self):
+		out_string = ""
+
+		out_string += "Here is some commands I can recognize:\n"
+		out_string += "	-show (to see the shedule)\n"
+		out_string += "	-add (to add a new post to the shedule)\n"
+		out_string += "	-del (to delete a post from the shedule)\n"
+
+		out_string += "\n	-help (to show this menu)"
+
+		return out_string
+
+	def delSheduledPostFunc(self, command):
+		if command.lower() == "del":
+			self.sendMessageToOwner("Send me an id of the post")
+			self.del_stage = 1
+
+		elif self.del_stage == 1:
+			try:
+				self.del_id = int(command)
+			except ValueError:
+				self.sendMessageToOwner("Its not a number!")
+			else:
+				if self.del_id < 0 or self.del_id >= len(self.shedule.list):
+					self.sendMessageToOwner("Its not a valid id!")
+				else:
+					self.del_stage = 2
+					self.sendMessageToOwner("Are you shure that you want to delete it? (y/n)")
+
+		elif self.del_stage == 2:
+			if command.lower() == "y":
+				self.shedule.delPost(self.del_id)
+				self.sendMessageToOwner("Post has been deleted!")
+			else:
+				self.sendMessageToOwner("Ok! Nothing will be deleted!")
+
+			self.del_stage == 0
+			self.del_id = -1
+
+
+	def photoAddFunc(self, command):
+		if command.lower() == "add":
+			self.sendMessageToOwner("Send me a photo link please")
+			self.photo_add_stage = 1
+
+		elif self.photo_add_stage == 1:
+			self.photo_add_data["photo"] = command
+			self.photo_add_stage = 2
+			self.sendMessageToOwner("Send me a caption please")
+
+		elif self.photo_add_stage == 2:
+			self.photo_add_data["caption"] = command
+			self.photo_add_stage = 3
+			self.sendMessageToOwner("Send me when the post must be posted. In format Year-Mounth-Day Hours:Minutes:Seconds")
+
+		elif self.photo_add_stage == 3:
+			self.photo_add_data["post_time_string"] = command
+			self.photo_add_stage = 0
+
+			answer = self.shedule.addPost(
+				self.photo_add_data["photo"],
+				self.photo_add_data["caption"],
+				self.photo_add_data["post_time_string"]
+			)
+
+			self.sendMessageToOwner(answer)
+
+	def sendMessageToOwner(self, text):
+		sendMessage(self.token, self.owner_id, text)
+		print("[" + strftime("%Y-%m-%d %H:%M:%S") + "] MessageToOwner\n", text)
