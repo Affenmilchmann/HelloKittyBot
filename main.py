@@ -15,8 +15,7 @@ is_set_up = False
 token = ""
 owner_id = ""
 channel_id = ""
-#default request id is 0 because there is no previous messages so we want to get all
-last_update_id = 0
+last_update_id = ""
 
 ##Check if Bot is set up
 #if file exists
@@ -91,13 +90,11 @@ else:
 	#########
 	#Saving data
 	with open(config_file, "w") as f:
-		f.write(str(token))
+		f.write(token)
 		f.write("\n")
-		f.write(str(owner_id))
+		f.write(owner_id)
 		f.write("\n")
-		f.write(str(channel_id))
-		f.write("\n")
-		f.write(str(last_update_id))
+		f.write(channel_id)
 
 	print("Awesome! Your settings were saved!")
 
@@ -108,4 +105,11 @@ else:
 hello_kitty = Bot(token, owner_id, channel_id, int(last_update_id))
 
 while True:
-	hello_kitty.mainLoop()
+    try:
+    	hello_kitty.mainLoop()
+    except BaseException as e:
+        with open("log_errors.txt", "a") as f:
+            f.write(str(format(e)) + "\n")
+
+        respond = sendMessage(token, owner_id, "[Crash]\n\n" + str(format(e)))
+        break

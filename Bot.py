@@ -30,12 +30,8 @@ class Bot:
 		#time managment
 		self.time_passed_since_post_check = POST_CHECK_INTERVAL
 
-		#typing init messages
-		#to the console
-		print("[" + strftime("%Y-%m-%d %H:%M:%S") + "] Bot is active. You can now chat it")
-		#and to the chat
-		self.sendMessageToOwner("Im set up!")
-		self.sendMessageToOwner(self.formHelpMenu())
+		print("Bot is active.")
+		self.sendMessageToOwner("Bot is active.")
 
 	def mainLoop(self):
 		self.updatesHandler()
@@ -117,11 +113,11 @@ class Bot:
 		out_string = ""
 
 		out_string += "Here is some commands I can recognize:\n"
-		out_string += "	-show (to see the shedule)\n"
-		out_string += "	-add (to add a new post to the shedule)\n"
-		out_string += "	-del (to delete a post from the shedule)\n"
+		out_string += "	show (to see the shedule)\n"
+		out_string += "	add (to add a new post to the shedule)\n"
+		out_string += "	del (to edelete a new post from the shedule)\n"
 
-		out_string += "\n	-help (to show this menu)"
+		out_string += "	help (to show this menu)"
 
 		return out_string
 
@@ -182,4 +178,4 @@ class Bot:
 
 	def sendMessageToOwner(self, text):
 		sendMessage(self.token, self.owner_id, text)
-		print("[" + strftime("%Y-%m-%d %H:%M:%S") + "] MessageToOwner\n", text)
+		print("[" + strftime("%Y-%m-%d %H:%M:%S") + "]MessageToOwner\n", text)
