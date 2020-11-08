@@ -15,7 +15,6 @@ is_set_up = False
 token = ""
 owner_id = ""
 channel_id = ""
-last_update_id = ""
 
 ##Check if Bot is set up
 #if file exists
@@ -40,7 +39,6 @@ if is_set_up:
 		token = f.readline().rstrip()
 		owner_id = f.readline().rstrip()
 		channel_id = f.readline().rstrip()
-		last_update_id = f.readline().rstrip()
 #else asking user to fill data
 else:
 	#########
@@ -102,7 +100,7 @@ else:
 #Run section
 #############################################################################
 
-hello_kitty = Bot(token, owner_id, channel_id, int(last_update_id))
+hello_kitty = Bot(token, owner_id, channel_id)
 
 while True:
     try:

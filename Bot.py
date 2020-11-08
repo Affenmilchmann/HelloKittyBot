@@ -1,21 +1,21 @@
 from Shedule import Shedule
 from time import strftime
-from myWebFuncs import getUpdates, sendMessage
+from myWebFuncs import getUpdates, sendMessage, sendPhoto, sendDocument
 
 from time import sleep
 
 config_file = "config.cfg"
 
-ANSWER_INTERVAL = 15 #seconds
+ANSWER_INTERVAL = 14 #seconds
 POST_CHECK_INTERVAL = 333 #seconds
 
 class Bot:
-	def __init__(self, token, owner_id, channel_id, last_update_id):
+	def __init__(self, token, owner_id, channel_id):
 		self.token = token
 		self.owner_id = owner_id
 		self.channel_id = channel_id
 		#keep track of the lst update to request only new updates
-		self.last_update_id = last_update_id
+		self.last_update_id = 0
 		#Shedule loads shedule from file defined in Shedule.py
 		self.shedule = Shedule()
 
@@ -56,7 +56,7 @@ class Bot:
 		#getting updates
 		# + 1 means that we are requesting updates only after the last one
 		updates = getUpdates(self.token, self.last_update_id + 1)
-
+		print(updates, type(updates))
 		#checking if there an error
 		if not updates['ok']:
 			self.sendMessageToOwner("[" + strftime("%Y-%m-%d %H:%M:%S") + "] Error while trying to get updates here is telegram`s answer.\n" + updates)
@@ -67,29 +67,51 @@ class Bot:
 			for upd in updates:
 				#answer them only if update has a text
 				if "message" in upd:
-					if "text" in upd["message"]:
-						#sending text to the next step. Recognising the command
-						self.replyHandler(upd["message"]["text"])
+					if str(upd["message"]["from"]["id"]) == str(self.owner_id):
+						self.adminUpdates(upd)
 					else:
-						#if there is no text
-						self.sendMessageToOwner("Its not a command...")
-				else:
-					#if there is no text
-					self.sendMessageToOwner("Its not a command...")
+						self.userUpdates(upd)
 
 			#getting last update`s id bc we dont want to run it twice
 			if len(updates) > 0:
 				self.last_update_id = updates[-1]["update_id"]
-				#rewriting last update id in the file
-				lines = []
-				with open(config_file, "r") as f:
-					lines = f.readlines()
 
-				lines[3] = str(updates[-1]["update_id"])
-
-				with open(config_file, "w") as f:
-					f.writelines(lines)
-
+	def adminUpdates(self, upd):
+		if "text" in upd["message"]:
+			#sending text to the next step. Recognising the command
+			self.replyHandler(upd["message"]["text"])
+			
+	def userUpdates(self, upd):
+		user_id = upd["message"]["from"]["id"]
+		user_name = "@" + str(upd["message"]["from"]["username"])
+		
+		if ("photo" not in upd["message"]) and ("document" not in upd["message"]) or ("document" in upd["message"] and "photo" in upd["message"]): #its just xor
+			self.sendMessageToUser(user_id, "Это не похоже на фото... \nПросто отправьте мне фото. Можно файлом.\n \n" + 
+								   "Если вы считаете, что отправили фото, но видите это сообщение, можете стукнуть админа(@affenmilchmann) по голове ибо он плохой кодер. " + 
+								   "Просто перешлите ему наши сообщения")
+			return
+			
+		if "photo" in upd["message"]:
+			photo_obj = upd["message"]["photo"]
+			#there are a row of photos in different size. Last one is the biggest one
+			photo = photo_obj[-1]
+			result = sendPhoto(self.token, self.owner_id, photo["file_id"], str(user_name) + "\n" + str(photo["file_id"]))
+			
+		elif "document" in upd["message"]:
+			document = upd["message"]["document"]
+			result = sendDocument(self.token, self.owner_id, document["file_id"], str(user_name) + "\n" + str(document["file_id"]))
+			
+		else:
+			self.sendMessageToOwner("Чел как так\n" + str(upd))
+			self.sendMessageToUser(user_id, "Произошла очень странная вещь в коде, ибо админ плохо меня закодил. Я уже сказал ему об этой ошибке")
+			
+		if result == False:
+			print(result)
+			self.sendMessageToOwner("I`ve tried to send you a user photo, but smthg went wrong.\n User " + str(user_name) + "\n" + result)
+			self.sendMessageToUser(user_id, "Something went wrong. I`ve sent a message to admin about it\nЧто-то пошло не так, я уже уведомил админа об этом")
+		else:
+			self.sendMessageToUser(user_id, "Я отправил фото админу!\nСпасибо большое!")
+				
 	def replyHandler(self, command):
 		print("[" + strftime("%Y-%m-%d %H:%M:%S") + "] OwnerMessage\n", command)
 
@@ -176,6 +198,10 @@ class Bot:
 
 			self.sendMessageToOwner(answer)
 
+	def sendMessageToUser(self, user_id, text):
+		sendMessage(self.token, user_id, text)
+		print("[" + strftime("%Y-%m-%d %H:%M:%S") + "] MessageToUser " + str(user_id) + "\n", text)
+			
 	def sendMessageToOwner(self, text):
 		sendMessage(self.token, self.owner_id, text)
-		print("[" + strftime("%Y-%m-%d %H:%M:%S") + "]MessageToOwner\n", text)
+		print("[" + strftime("%Y-%m-%d %H:%M:%S") + "] MessageToOwner\n", text)

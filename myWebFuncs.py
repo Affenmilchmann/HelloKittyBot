@@ -40,6 +40,20 @@ def getRequest(token, method, data = {}):
 
 	return response_string
 
+def sendDocument(token, chat_id, file_id, caption = "", disable_notifications = False):
+	data = {
+		'chat_id': chat_id,
+		'document': file_id,
+		'caption': caption,
+		'disable_notification': disable_notifications
+	}
+	response_string = postRequest(token, chat_id, "sendDocument", data)
+	
+	if response_string['ok'] == False:
+		return response_string
+	else:
+		return True
+	
 #it returns response text in case of an error or True if all is ok
 def sendPhoto(token, chat_id, photo_link, caption, disable_notifications = False):
 	data = {
