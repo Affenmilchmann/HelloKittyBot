@@ -129,7 +129,7 @@ class Bot:
 		elif command.lower() == "del" or self.del_stage > 0:
 			self.delSheduledPostFunc(command)
 
-		elif command.lower() 
+		#elif command.lower() 
 
 		else:
 			self.sendMessageToOwner("I cant understand you...")
