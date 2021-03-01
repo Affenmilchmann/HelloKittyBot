@@ -6,7 +6,7 @@ from time import sleep
 
 config_file = "config.cfg"
 
-ANSWER_INTERVAL = 14 #seconds
+ANSWER_INTERVAL = 15 #seconds
 POST_CHECK_INTERVAL = 333 #seconds
 
 class Bot:
@@ -56,7 +56,7 @@ class Bot:
 		#getting updates
 		# + 1 means that we are requesting updates only after the last one
 		updates = getUpdates(self.token, self.last_update_id + 1)
-		print(updates, type(updates))
+		#print(updates, type(updates))
 		#checking if there an error
 		if not updates['ok']:
 			self.sendMessageToOwner("[" + strftime("%Y-%m-%d %H:%M:%S") + "] Error while trying to get updates here is telegram`s answer.\n" + updates)
@@ -115,6 +115,8 @@ class Bot:
 	def replyHandler(self, command):
 		print("[" + strftime("%Y-%m-%d %H:%M:%S") + "] OwnerMessage\n", command)
 
+	
+
 		if command.lower() == "help":
 			self.sendMessageToOwner(self.formHelpMenu())
 
@@ -126,6 +128,8 @@ class Bot:
 
 		elif command.lower() == "del" or self.del_stage > 0:
 			self.delSheduledPostFunc(command)
+
+		elif command.lower() 
 
 		else:
 			self.sendMessageToOwner("I cant understand you...")

@@ -102,6 +102,10 @@ else:
 
 hello_kitty = Bot(token, owner_id, channel_id)
 
+print("[INFO] Bot is running with settings: ")
+print("		- admin id:", owner_id)
+print("		- channel id:", channel_id)
+
 while True:
     try:
     	hello_kitty.mainLoop()
