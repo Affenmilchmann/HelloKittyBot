@@ -83,7 +83,10 @@ class Bot:
 			
 	def userUpdates(self, upd):
 		user_id = upd["message"]["from"]["id"]
-		user_name = "@" + str(upd["message"]["from"]["username"])
+		if "username" in upd["message"]["from"]:
+			user_name = "@" + str(upd["message"]["from"]["username"])
+		else:
+			user_name = "NoUserName"
 		
 		if ("photo" not in upd["message"]) and ("document" not in upd["message"]) or ("document" in upd["message"] and "photo" in upd["message"]): #its just xor
 			self.sendMessageToUser(user_id, "Это не похоже на фото... \nПросто отправьте мне фото. Можно файлом.\n \n" + 
