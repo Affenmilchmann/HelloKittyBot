@@ -6,8 +6,8 @@ from time import sleep
 
 config_file = "config.cfg"
 
-ANSWER_INTERVAL = 15 #seconds
-POST_CHECK_INTERVAL = 333 #seconds
+ANSWER_INTERVAL = 5 #seconds
+POST_CHECK_INTERVAL = 30 #seconds
 
 class Bot:
 	def __init__(self, token, owner_id, channel_id):
@@ -41,7 +41,7 @@ class Bot:
 			self.time_passed_since_post_check -= POST_CHECK_INTERVAL
 
 		self.time_passed_since_post_check += ANSWER_INTERVAL
-		sleep(ANSWER_INTERVAL)
+		sleep(max(ANSWER_INTERVAL, 0))
 
 	def postingHandler(self):
 		result = self.shedule.checkPosts(self.token, self.channel_id)
