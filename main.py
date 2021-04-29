@@ -17,19 +17,18 @@ channel_id = ""
 
 ##Check if Bot is set up
 #if file exists
-if os.path.isfile(config_file):
-	#if file is empty
-	is_set_up = not (os.stat(config_file).st_size == 0)
-else:
+try:
+	with open(config_file, 'r') as f:
+		is_set_up = not (len(f.read()) == 0)
+except IOError:
 	is_set_up = False
 
 ##Creating missing files
-if not os.path.isfile(json_file):
-	with open(json_file, "w") as f:
-		pass
-if not os.path.isfile(history_file):
-	with open(history_file, "w") as f:
-		pass
+with open(json_file, "a") as f:
+	pass
+
+with open(history_file, "a") as f:
+	pass
 ###################################
 #selling up token and ids values
 #if bot is set then just load data from config file
