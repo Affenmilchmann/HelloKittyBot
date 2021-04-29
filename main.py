@@ -7,9 +7,11 @@ os.environ['TZ'] = 'Europe/Moscow'
 time.tzset()
 
 ##Defining init vars
-config_file = "config.cfg"
-json_file = "shedule.json"
-history_file = "posted.txt"
+script_dir = os.path.dirname(__file__)
+
+config_file = os.path.join(script_dir, "config.cfg")
+json_file = os.path.join(script_dir, "shedule.json")
+history_file = os.path.join(script_dir, "posted.txt")
 is_set_up = False
 token = ""
 owner_id = ""

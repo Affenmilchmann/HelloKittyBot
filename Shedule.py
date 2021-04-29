@@ -1,11 +1,13 @@
-import json
+import json, os
 import operator
 from time import strftime
 
 from Post import Post
 
-json_file = "shedule.json"
-history_file = "posted.txt"
+script_dir = os.path.dirname(__file__)
+
+json_file = os.path.join(script_dir, "shedule.json")
+history_file = os.path.join(script_dir, "posted.txt")
 
 class Shedule:
 	def __init__(self):

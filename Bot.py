@@ -4,8 +4,6 @@ from myWebFuncs import getUpdates, sendMessage, sendPhoto, sendDocument
 
 from time import sleep
 
-config_file = "config.cfg"
-
 ANSWER_INTERVAL = 4 #seconds
 POST_CHECK_INTERVAL = 30 #seconds
 

@@ -1,7 +1,7 @@
 import requests
-import json
+import json, os
 
-log_file = "log.txt"
+log_file = os.path.join(os.path.dirname(__file__), "log.txt")
 
 #it returns response string
 #its used in POST requests
