@@ -4,8 +4,8 @@ from myWebFuncs import getUpdates, sendMessage, sendPhoto, sendDocument
 
 from time import sleep
 
-ANSWER_INTERVAL = 4 #seconds
-POST_CHECK_INTERVAL = 30 #seconds
+ANSWER_INTERVAL = 20 #seconds
+POST_CHECK_INTERVAL = 1000 #seconds
 
 class Bot:
 	def __init__(self, token, owner_id, channel_id):
