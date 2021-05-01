@@ -7,7 +7,7 @@ from Post import Post
 script_dir = os.path.dirname(__file__)
 
 json_file = os.path.join(script_dir, "shedule.json")
-history_file = os.path.join(script_dir, "logs/posted.txt")
+history_file = os.path.join(script_dir, "logs/posted_log.txt")
 
 class Shedule:
 	def __init__(self):
