@@ -26,6 +26,9 @@ class Bot:
 		self.del_stage = 0
 		self.del_id = -1
 
+		self.force_post_stage = 0
+		self.force_id = -1
+
 		#time managment
 		self.time_passed_since_post_check = POST_CHECK_INTERVAL
 
@@ -134,7 +137,8 @@ class Bot:
 		elif command.lower() == "del" or self.del_stage > 0:
 			self.delSheduledPostFunc(command)
 
-		#elif command.lower() 
+		elif command.lower() == "force" or self.force_post_stage > 0:
+			self.forcePost(command)
 
 		else:
 			self.sendMessageToOwner("I cant understand you...")
@@ -151,6 +155,33 @@ class Bot:
 		out_string += "	help (to show this menu)"
 
 		return out_string
+
+	def forcePost(self, command):
+		if command.lower() == "force":
+			self.sendMessageToOwner("Send me an id of the post")
+			self.force_post_stage = 1
+
+		elif self.force_post_stage == 1:
+			try:
+				self.force_id = int(command)
+			except ValueError:
+				self.sendMessageToOwner("Its not a number!")
+			else:
+				if self.force_id < 0 or self.force_id >= len(self.shedule.list):
+					self.sendMessageToOwner("Its not a valid id!")
+				else:
+					self.force_post_stage = 2
+					self.sendMessageToOwner("Are you shure that you want to post it? (y/n)")
+
+		elif self.force_post_stage == 2:
+			if command.lower() == "y":
+				self.shedule.list[self.force_id].sendPost(self.token, self.channel_id)
+				self.sendMessageToOwner("Post has been posted!")
+			else:
+				self.sendMessageToOwner("Ok!")
+
+			self.force_post_stage == 0
+			self.force_id = -1
 
 	def delSheduledPostFunc(self, command):
 		if command.lower() == "del":
