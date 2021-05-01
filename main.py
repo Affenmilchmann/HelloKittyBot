@@ -107,13 +107,13 @@ else:
 #Run section
 #############################################################################
 
-botLog("Started.")
-
 hello_kitty = Bot(token, owner_id, channel_id)
 
 consoleOutput("Bot is running with settings:\n		- admin id: " +  str(owner_id) + "\n" + "		- channel id:" + str(channel_id))
 try:
 	logsCheck()
+	botLog("Started.")
+	
 	while True:
 		hello_kitty.mainLoop()
 except BaseException as e:
