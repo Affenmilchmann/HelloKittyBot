@@ -7,6 +7,7 @@ log_file = ospath.join(ospath.dirname(__file__), logs_folder + "log.txt")
 r_log_file = ospath.join(ospath.dirname(__file__), logs_folder + "requests_log.txt")
 m_log_file = ospath.join(ospath.dirname(__file__), logs_folder + "msg_log.txt")
 err_log_file = ospath.join(ospath.dirname(__file__), logs_folder + "error_log.txt")
+p_log_file = ospath.join(ospath.dirname(__file__), logs_folder + "posted_log.txt")
 
 def formTimeStamp(format_ = 'd'):
     '''
@@ -56,6 +57,7 @@ def logsCheck():
     fileCheck(r_log_file)
     fileCheck(m_log_file)
     fileCheck(err_log_file)
+    fileCheck(p_log_file)
 
     consoleOutput("Logs are checked.", 'i')
 
