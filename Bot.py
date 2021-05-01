@@ -1,10 +1,11 @@
 from Shedule import Shedule
 from time import strftime
 from myWebFuncs import getUpdates, sendMessage, sendPhoto, sendDocument
+from log import *
 
 from time import sleep
 
-ANSWER_INTERVAL = 20 #seconds
+ANSWER_INTERVAL = 3 #seconds
 POST_CHECK_INTERVAL = 1000 #seconds
 
 class Bot:
@@ -28,7 +29,7 @@ class Bot:
 		#time managment
 		self.time_passed_since_post_check = POST_CHECK_INTERVAL
 
-		print("Bot is active.")
+		consoleOutput("Bot is active.")
 		self.sendMessageToOwner("Bot is active.")
 
 	def mainLoop(self):
@@ -46,15 +47,15 @@ class Bot:
 
 		if result != "":
 		    self.sendMessageToOwner(result)
-		    print(result)
+		    consoleOutput(str(result))
 		else:
-		    print("[" + strftime("%Y-%m-%d %H:%M:%S") + "] Nothing posted\n")
+		    consoleOutput("Nothing posted")
 
 	def updatesHandler(self):
 		#getting updates
 		# + 1 means that we are requesting updates only after the last one
 		updates = getUpdates(self.token, self.last_update_id + 1)
-		#print(updates, type(updates))
+		
 		#checking if there an error
 		if not updates['ok']:
 			self.sendMessageToOwner("[" + strftime("%Y-%m-%d %H:%M:%S") + "] Error while trying to get updates here is telegram`s answer.\n" + updates)
@@ -87,6 +88,7 @@ class Bot:
 			user_name = "UID:" + user_id
 		
 		if ("photo" not in upd["message"]) and ("document" not in upd["message"]) or ("document" in upd["message"] and "photo" in upd["message"]): #its just xor
+			msgLog(upd["message"], str(user_name) + "(" + str(user_id) + ")", "Bot")
 			self.sendMessageToUser(user_id, "Это не похоже на фото... \nПросто отправьте мне фото. Можно файлом.\n \n" + 
 								   "Если вы считаете, что отправили фото, но видите это сообщение, можете стукнуть админа(@affenmilchmann) по голове ибо он плохой кодер. " + 
 								   "Просто перешлите ему наши сообщения")
@@ -94,12 +96,14 @@ class Bot:
 			
 		if "photo" in upd["message"]:
 			photo_obj = upd["message"]["photo"]
+			msgLog("Photo " + str(photo_obj), str(user_name) + "(" + str(user_id) + ")", "Bot")
 			#there are a row of photos in different size. Last one is the biggest one
 			photo = photo_obj[-1]
 			result = sendPhoto(self.token, self.owner_id, photo["file_id"], str(user_name) + "\n" + str(photo["file_id"]))
 			
 		elif "document" in upd["message"]:
 			document = upd["message"]["document"]
+			msgLog("Document " + str(document), str(user_name) + "(" + str(user_id) + ")", "Bot")
 			result = sendDocument(self.token, self.owner_id, document["file_id"], str(user_name) + "\n" + str(document["file_id"]))
 			
 		else:
@@ -107,14 +111,14 @@ class Bot:
 			self.sendMessageToUser(user_id, "Произошла очень странная вещь в коде, ибо админ плохо меня закодил. Я уже сказал ему об этой ошибке")
 			
 		if result == False:
-			print(result)
+			consoleOutput(str(result))
 			self.sendMessageToOwner("I`ve tried to send you a user photo, but smthg went wrong.\n User " + str(user_name) + "\n" + result)
 			self.sendMessageToUser(user_id, "Something went wrong. I`ve sent a message to admin about it\nЧто-то пошло не так, я уже уведомил админа об этом")
 		else:
 			self.sendMessageToUser(user_id, "Я отправил фото админу!\nСпасибо большое!")
 				
 	def replyHandler(self, command):
-		print("[" + strftime("%Y-%m-%d %H:%M:%S") + "] OwnerMessage\n", command)
+		consoleOutput("OwnerMessage " + str(command))
 
 	
 
@@ -205,8 +209,8 @@ class Bot:
 
 	def sendMessageToUser(self, user_id, text):
 		sendMessage(self.token, user_id, text)
-		print("[" + strftime("%Y-%m-%d %H:%M:%S") + "] MessageToUser " + str(user_id) + "\n", text)
-			
+		msgLog(text, "Bot", str(user_id))
+		consoleOutput("Message sent to user " + str(user_id) + ". Message: '" + text + "'")
+
 	def sendMessageToOwner(self, text):
 		sendMessage(self.token, self.owner_id, text)
-		print("[" + strftime("%Y-%m-%d %H:%M:%S") + "] MessageToOwner\n", text)

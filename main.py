@@ -1,6 +1,9 @@
 import os, time
 from Bot import Bot
-from myWebFuncs import getMe, sendMessage
+from myWebFuncs import getMe, sendMessage, getMessages
+from log import *
+from random import choices
+from string import digits
 
 ##Setting timezone
 os.environ['TZ'] = 'Europe/Moscow'
@@ -54,20 +57,24 @@ else:
 			print("Something wrong with this token... Please try again")
 
 	#Setting owner chat:
-	print("Great, input your telegram id (its a number. you can google how to get it):")
-	while True:
-		owner_id = input(">> ")
-		respond = sendMessage(token, owner_id, "Hello!")
-		if respond != True:
-			print("Something wrong with this id... Please try again")
-			print("[ErrorMessage]", respond)
-			continue
-		else:
-			print("Have you recieved message from the bot (y/n)?")
-			if input(">> ") == "y":
+	secret = ''.join(choices(digits, k=5))
+	print("Great, now pls sent this code to the bot: " + secret)
+	input("Hit enter when you are ready.")
+	is_ready = False
+	while not is_ready:
+		msgs = getMessages(token)
+		for user in msgs:
+			for msg in msgs[user]:
+				if msg == secret:
+					is_ready = True
+					owner_id = user
+					break
+			if is_ready:
 				break
-			else:
-				print("Then input the correct one:")
+		if is_ready:
+			break
+		else:
+			input("I havent got right message :( try again")
 
 	#setting channel chat
 	print("Amazing! Now add a bot to your channel and give gim post premissions.")
@@ -90,7 +97,7 @@ else:
 	with open(config_file, "w") as f:
 		f.write(token)
 		f.write("\n")
-		f.write(owner_id)
+		f.write(str(owner_id))
 		f.write("\n")
 		f.write(channel_id)
 
@@ -100,18 +107,15 @@ else:
 #Run section
 #############################################################################
 
+botLog("Started.")
+
 hello_kitty = Bot(token, owner_id, channel_id)
 
-print("[INFO] Bot is running with settings: ")
-print("		- admin id:", owner_id)
-print("		- channel id:", channel_id)
-
-while True:
-    try:
-    	hello_kitty.mainLoop()
-    except BaseException as e:
-        with open("log_errors.txt", "a") as f:
-            f.write(str(format(e)) + "\n")
-
-        respond = sendMessage(token, owner_id, "[Crash]\n\n" + str(format(e)))
-        break
+consoleOutput("Bot is running with settings:\n		- admin id: " +  str(owner_id) + "\n" + "		- channel id:" + str(channel_id))
+try:
+	while True:
+		hello_kitty.mainLoop()
+except BaseException as e:
+	errLog(str(format(e)))
+	botLog("Crashed.")
+	respond = sendMessage(token, owner_id, "[Crash]\n\n" + str(format(e)))
