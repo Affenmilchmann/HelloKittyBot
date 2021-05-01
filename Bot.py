@@ -5,7 +5,7 @@ from log import *
 
 from time import sleep
 
-ANSWER_INTERVAL = 3 #seconds
+ANSWER_INTERVAL = 20 #seconds
 POST_CHECK_INTERVAL = 1000 #seconds
 
 class Bot:
