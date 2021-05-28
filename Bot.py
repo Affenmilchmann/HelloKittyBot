@@ -84,9 +84,9 @@ class Bot:
 			self.replyHandler(upd["message"]["text"])
 			
 	def userUpdates(self, upd):
-		user_id = upd["message"]["from"]["id"]
+		user_id = str(upd["message"]["from"]["id"])
 		if "username" in upd["message"]["from"]:
-			user_name = "@" + str(upd["message"]["from"]["username"])
+			user_name = "@" + user_id
 		else:
 			user_name = "UID:" + user_id
 		
